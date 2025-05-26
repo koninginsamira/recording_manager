@@ -11,6 +11,7 @@ namespace Jellyfin.Plugin.RecordingManager
     using System.Threading;
     using System.Threading.Tasks;
     using Jellyfin.Data.Events;
+    using MediaBrowser.Controller.Dto;
     using MediaBrowser.Controller.LiveTv;
     using MediaBrowser.Model.LiveTv;
     using Microsoft.Extensions.Hosting;
@@ -62,11 +63,15 @@ namespace Jellyfin.Plugin.RecordingManager
             try
             {
                 this.logger.LogInformation("Recording started: {E}", e.ToString());
+                var query = new RecordingQuery();
+                var recordings = await liveTvManager.GetRecordingsAsync(query, new DtoOptions()).ConfigureAwait(false);
+                this.logger.LogInformation("Recording found: {E}", recordings.ToString());
 
                 var payload = new
                 {
                     eventType = "recordingStarted",
                     e,
+                    recordings,
                 };
 
                 var json = JsonSerializer.Serialize(payload);
