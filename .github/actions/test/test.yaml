@@ -1,0 +1,8 @@
+name: '🧪 Test'
+
+on:
+  workflow_call:
+
+jobs:
+  call:
+    uses: jellyfin/jellyfin-meta-plugins/.github/workflows/test.yaml@master

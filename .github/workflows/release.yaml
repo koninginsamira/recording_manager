@@ -2,15 +2,8 @@ name: '🕊️ Release'
 
 on:
   push:
-    branches:
-      - main
-    tags-ignore:
+    tags:
       - "v*"
-    paths-ignore:
-      - "**/*.md"
-  pull_request:
-    branches:
-      - main
     paths-ignore:
       - "**/*.md"
   workflow_dispatch:
@@ -22,10 +15,10 @@ jobs:
     steps:
       - name: Test plugin
         id: test
-        uses: ./.github/workflows/test.yml
+        uses: ./.github/actions/test
       - name: Build plugin
         id: build
-        uses: ./.github/workflows/build.yml
+        uses: ./.github/actions/build
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:

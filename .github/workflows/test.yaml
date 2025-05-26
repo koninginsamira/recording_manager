@@ -4,16 +4,21 @@ on:
   push:
     branches:
       - main
+    tags-ignore:
+      - "v*"
     paths-ignore:
-      - '**/*.md'
+      - "**/*.md"
   pull_request:
     branches:
       - main
     paths-ignore:
-      - '**/*.md'
+      - "**/*.md"
   workflow_dispatch:
-  workflow_call:
 
 jobs:
-  call:
-    uses: jellyfin/jellyfin-meta-plugins/.github/workflows/test.yaml@master
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Use local hello-world-action
+        uses: ./.github/actions/test
