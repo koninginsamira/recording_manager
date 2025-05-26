@@ -65,7 +65,7 @@ namespace Jellyfin.Plugin.RecordingManager
                 this.logger.LogInformation("Recording started: {E}", e.ToString());
                 var query = new RecordingQuery();
                 var recordings = await liveTvManager.GetRecordingsAsync(query, new DtoOptions()).ConfigureAwait(false);
-                this.logger.LogInformation("Recording found: {Recordingss}", recordings.ToString());
+                this.logger.LogInformation("Recording found: {Recordings}", recordings.ToString());
 
                 var payload = new
                 {
