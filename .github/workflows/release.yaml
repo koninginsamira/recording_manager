@@ -1,48 +1,36 @@
-# .github/workflows/release.yml
-name: '🕊️ Release Plugin'
+name: '🕊️ Release'
 
 on:
-  workflow_run:
-    workflows: ["🏗️ Build Plugin"]  # Must match the `name:` in build.yml
-    types:
-      - completed
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - "v*"
+    paths-ignore:
+      - "**/*.md"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+  workflow_dispatch:
 
 jobs:
   release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ github.event.workflow_run.id }}
-          name: build-artifact
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: dist
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Get tag from triggering commit
-        id: get_tag
-        run: |
-          TAG=$(git tag --contains ${{ github.event.workflow_run.head_sha }} | grep '^v' | head -n1 || true)
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-
-      - name: Fail if no release tag found
-        if: steps.get_tag.outputs.tag == ''
-        run: |
-          echo "❌ No release tag (v*) found pointing to this commit."
-          exit 1
-
-      - name: Create GitHub Release
+      - name: Test plugin
+        id: test
+        uses: ./.github/workflows/test.yml
+      - name: Build plugin
+        id: build
+        uses: ./.github/workflows/build.yml
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.get_tag.outputs.tag }}
-          name: Release ${{ steps.get_tag.outputs.tag }}
-          files: dist/output.txt
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: ${{ steps.build.outputs }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
