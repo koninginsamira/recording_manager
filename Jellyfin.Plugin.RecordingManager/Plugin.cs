@@ -38,7 +38,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     public override string Name => "Recording Manager";
 
     /// <inheritdoc />
-    public override string Description => "Adds functionality to improve the user experience of recording Live TV.";
+    public override string Description => "Recording Manager is a plugin that adds to the existing functionality for recording Live TV from within Jellyfin.";
 
     /// <inheritdoc />
     public override Guid Id => Guid.Parse("eb5d7894-8eef-4b36-aa6f-5d124e828ce1");
