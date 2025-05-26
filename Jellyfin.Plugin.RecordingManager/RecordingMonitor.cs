@@ -2,8 +2,6 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-#pragma warning disable CA1848
-
 namespace Jellyfin.Plugin.RecordingManager
 {
     using System;
