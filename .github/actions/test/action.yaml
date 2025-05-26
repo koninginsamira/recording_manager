@@ -1,6 +1,13 @@
 name: "🧪 Test"
 description: "Test plugin"
 
+inputs:
+  dotnet-version:
+    required: false
+    default: "8.0.x"
+    description: "The .NET version to setup for the build"
+    type: string
+
 runs:
   using: "composite"
 
