@@ -1,8 +1,8 @@
-name: '🧪 Test'
+name: "🧪 Test"
+description: "Test plugin"
 
-on:
-  workflow_call:
+runs:
+  using: "composite"
 
-jobs:
   call:
     uses: jellyfin/jellyfin-meta-plugins/.github/workflows/test.yaml@master
