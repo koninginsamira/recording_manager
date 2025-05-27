@@ -19,12 +19,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Test plugin
         id: test
         uses: ./.github/actions/test
+
       - name: Build plugin
         id: build
         uses: ./.github/actions/build
+
       - name: Get tag name
         id: tag
         run: echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
@@ -34,7 +37,9 @@ jobs:
           TAG_NAME=${{ steps.tag.outputs.tag_name }}
           TAG_MESSAGE=$(git for-each-ref refs/tags/$TAG_NAME --format='%(contents)')
           echo "msg=$TAG_MESSAGE" >> $GITHUB_OUTPUT
+
       - name: Create GitHub release
+        id: release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag_name }}
@@ -44,3 +49,49 @@ jobs:
           files: ${{ steps.build.outputs.build }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get md5 checksum
+        id: checksum
+        run: |
+          FILE="${{ steps.build.outputs.build }}"
+          echo "md5=$(md5sum $FILE | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Clone target manifest repo using SSH
+        run: |
+          git clone git@github.com:koninginsamira/jellyfin_repository.git
+
+      - name: Update plugin manifest
+        run: |
+          cd jellyfin_repository
+
+          python3 -c "
+            import json
+            from datetime import datetime
+
+            with open('manifest.json', 'r+', encoding='utf-8') as f:
+                data = json.load(f)
+                new_version = {
+                    'version': '${{ steps.tag.outputs.tag_name }}',
+                    'changelog': '${{ steps.tag_msg.outputs.msg }}',
+                    'targetAbi': '${{ steps.tag.outputs.tag_name }}',
+                    'sourceUrl': '${{ fromJSON(steps.release.outputs.assets)[0].browser_download_url }}',
+                    'checksum': '${{ steps.checksum.outputs.md5 }}',
+                    'timestamp': datetime.utcnow().isoformat(timespec='minutes')
+                }
+                data[0]['versions'].insert(0, new_version)
+                f.seek(0)
+                json.dump(data, f, indent=4)
+                f.truncate()
+          "
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          git commit -m "Add version ${{ steps.tag.outputs.tag_name }} to manifest"
+          git push
