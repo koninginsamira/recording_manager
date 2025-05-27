@@ -64,14 +64,14 @@ namespace Jellyfin.Plugin.RecordingManager
             {
                 this.logger.LogInformation("Recording started: {E}", e.ToString());
                 var query = new RecordingQuery();
-                var recordings = await liveTvManager.GetRecordingsAsync(query, new DtoOptions()).ConfigureAwait(false);
-                this.logger.LogInformation("Recording found: {Recordings}", recordings.ToString());
+                var timer = liveTvManager.GetTimer(e.Argument.Id, new CancellationToken(false));
+                this.logger.LogInformation("Recording found: {Recordings}", timer.ToString());
 
                 var payload = new
                 {
                     eventType = "recordingStarted",
                     e,
-                    recordings,
+                    timer,
                 };
 
                 var json = JsonSerializer.Serialize(payload);
